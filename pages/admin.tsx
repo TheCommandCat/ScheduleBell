@@ -26,9 +26,25 @@ const AdminPage: React.FC = () => {
     setPassword(e.target.value);
   };
 
-  const handleScheduleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setScheduleFile(e.target.files[0]);
+  const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
+    try {
+      const response = await fetch("/api/updateSchedule", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${password}`,
+        },
+        body: JSON.stringify(schedule),
+      });
+
+      if (response.ok) {
+        console.log(JSON.stringify(schedule));
+        
+        setMessage("Files uploaded successfully");
+      } else {
+        setMessage("Failed to upload files");
+      }
+    } catch (error) {
+      setMessage("Error uploading files");
     }
   };
 
@@ -146,7 +162,7 @@ const AdminPage: React.FC = () => {
             <DialogTitle>Edit Schedule</DialogTitle>
             <DialogContent>
               <SchedulerEditor
-                onScheduleChange={(schedule) => console.log(schedule)}
+                onScheduleChange={(schedule) => handleScheduleSubmit(schedule)}
               />
             </DialogContent>
             <DialogActions>

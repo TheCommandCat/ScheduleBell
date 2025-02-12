@@ -31,6 +31,7 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [lessonName, setLessonName] = useState("");
   const [lessonTime, setLessonTime] = useState("");
+  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
 
   const addLesson = () => {
     const newLesson: Lesson = {
@@ -47,7 +48,11 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
       schedule[lesson.name] = lesson.time;
     });
 
-    onScheduleChange(schedule); // Pass the schedule to the parent component
+    console.log(schedule);
+    setSchedule(schedule);
+    
+
+    // onScheduleChange(schedule); // Pass the schedule to the parent component
   };
 
   const removeLesson = (id: number) => {
@@ -60,7 +65,10 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
       schedule[lesson.name] = lesson.time;
     });
 
-    onScheduleChange(schedule); // Pass the updated schedule to the parent component
+    console.log(schedule);
+    setSchedule(schedule);
+
+    // onScheduleChange(schedule); // Pass the updated schedule to the parent component
   };
 
   return (
@@ -99,6 +107,13 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
           </ListItem>
         ))}
       </List>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => onScheduleChange(schedule)}
+      >
+        Save Schedule
+      </Button>
     </Paper>
   );
 };
