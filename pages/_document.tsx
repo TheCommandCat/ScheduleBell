@@ -1,3 +1,4 @@
+import theme from "@/lib/theme";
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
@@ -17,7 +18,7 @@ export default function Document() {
           rel="stylesheet"
         />
       </Head>
-      <body dir="rtl">
+      <body>
         <Main />
         <NextScript />
       </body>
