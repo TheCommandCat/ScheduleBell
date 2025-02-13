@@ -38,7 +38,7 @@ const AdminPage: React.FC = () => {
 
       if (response.ok) {
         console.log(JSON.stringify(schedule));
-        
+
         setMessage("Files uploaded successfully");
       } else {
         setMessage("Failed to upload files");

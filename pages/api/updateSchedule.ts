@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
+import path from "path";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const adminPassword = "1234"; // Replace with your actual admin password
@@ -20,7 +21,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     console.log(schedule);
 
-    fs.writeFileSync("./public/schedule.json", schedule);
+
+    const filePath = path.join("/tmp", "schedule.json");
+    fs.writeFileSync(filePath, schedule);
 
     res.status(200).json({ message: "Schedule updated successfully" });
   } catch (error) {

@@ -9,7 +9,7 @@ import {
   ListItemText,
   Card,
 } from "@mui/material";
-import schedule from "../public/schedule.json";
+import path from "path";
 
 interface Alarm {
   name: string;
@@ -23,11 +23,15 @@ const getCurrentTime = (): string => {
   });
 };
 
-const App: React.FC = () => {
+const App: React.FC = async () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
   const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
+
+  const schedule: { [key: string]: string } = await fetch(
+    "/api/getSchedule"
+  ).then((res) => res.json());
 
   const getUpcomingAlarms = useCallback(() => {
     return Object.entries(schedule)
