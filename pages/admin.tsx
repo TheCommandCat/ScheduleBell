@@ -28,7 +28,12 @@ const AdminPage: React.FC = () => {
 
   const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
     try {
-      const response = await fetch("/api/updateSchedule", {
+      const baseUrl =
+        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
+          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+          : "";
+      const apiUrl = `${baseUrl}/api/updateSchedule`;
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${password}`,
@@ -74,7 +79,12 @@ const AdminPage: React.FC = () => {
     if (soundFile) formData.append("sound", soundFile);
 
     try {
-      const response = await fetch("/api/upload", {
+      const baseUrl =
+        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
+          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+          : "";
+      const apiUrl = `${baseUrl}/api/upload`;
+      const response = await fetch(apiUrl, {
         method: "POST",
         body: formData,
       });

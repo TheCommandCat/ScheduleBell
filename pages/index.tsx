@@ -23,24 +23,34 @@ const getCurrentTime = (): string => {
   });
 };
 
-const App: React.FC = async () => {
+const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
   const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
-
-  const schedule: { [key: string]: string } = await fetch(
-    "/api/getSchedule"
-  ).then((res) => res.json());
+  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
 
   const getUpcomingAlarms = useCallback(() => {
     return Object.entries(schedule)
       .map(([name, time]) => ({ name, time }))
       .filter(({ time }) => time > currentTime)
       .sort((a, b) => (a.time > b.time ? 1 : -1));
-  }, [currentTime]);
+  }, [currentTime, schedule]);
 
   useEffect(() => {
+    const fetchSchedule = async () => {
+      const baseUrl =
+        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
+          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+          : "";
+      const apiUrl = `${baseUrl}/api/getSchedule`;
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      setSchedule(data);
+    };
+
+    fetchSchedule();
+
     const updateClock = () => {
       const time = getCurrentTime();
       setCurrentTime(time);
