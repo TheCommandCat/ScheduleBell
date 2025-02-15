@@ -29,7 +29,7 @@ export default async function handler(
     } catch (error) {
       res
         .status(500)
-        .json({ message: "File upload error", error: error.message });
+        .json({ message: "File upload error", error: (error as Error).message });
     }
   });
 }
