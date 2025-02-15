@@ -10,9 +10,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const filePath = path.join("/tmp", "schedule.json");
 
-  
-  
-
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
       return res.status(500).json({ error: "Failed to read schedule file" });
