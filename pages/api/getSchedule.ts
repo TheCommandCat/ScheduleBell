@@ -1,24 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
 
-  const filePath = path.join("/tmp", "schedule.json");
+  const blobUrl =
+    "https://jpgmakypmimtlyqi.public.blob.vercel-storage.com/schedule-MHJZQSKB6jWGnOmK5KxIKAlWKU9xCo.json";
 
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      return res.status(500).json({ error: "Failed to read schedule file" });
+  try {
+    const response = await fetch(blobUrl);
+    if (!response.ok) {
+      throw new Error("Failed to fetch schedule file");
     }
-    try {
-      const schedule = JSON.parse(data);
-      res.json(schedule);
-    } catch (parseError) {
-      res.status(500).json({ error: "Failed to parse schedule file" });
-    }
-  });
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: (error as any).message });
+  }
 }

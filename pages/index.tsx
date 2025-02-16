@@ -28,7 +28,18 @@ const App: React.FC = () => {
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
   const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
-  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
+
+  const baseUrl =
+    typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : "http://localhost:3000";
+  const apiUrl = `${baseUrl}/api/getSchedule`;
+  const res = await fetch(apiUrl);
+  const data = await res.json();
+
+  console.log(data);
+
+  const schedule = data;
 
   const getUpcomingAlarms = useCallback(() => {
     return Object.entries(schedule)
@@ -94,7 +105,10 @@ const App: React.FC = () => {
         <Button variant="contained" onClick={() => audioRef.current?.play()}>
           Test Alarm
         </Button>
-        <audio ref={audioRef} src="/sound.mp3" />
+        <audio
+          ref={audioRef}
+          src="https://jpgmakypmimtlyqi.public.blob.vercel-storage.com/sound-zDkFiqPfFxbUIxKcwxQdEzBC4ZEKd1.mp3"
+        />
       </Paper>
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
         <Typography variant="h6" gutterBottom>
