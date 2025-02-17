@@ -9,7 +9,8 @@ import {
   ListItemText,
   Card,
 } from "@mui/material";
-import path from "path";
+import { list } from '@vercel/blob';
+
 
 interface Alarm {
   name: string;
@@ -23,23 +24,11 @@ const getCurrentTime = (): string => {
   });
 };
 
-const App: React.FC = () => {
+const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({ schedule, mp3Url }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
-  const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
-
-  const baseUrl =
-    typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : "http://localhost:3000";
-  const apiUrl = `${baseUrl}/api/getSchedule`;
-  const res = await fetch(apiUrl);
-  const data = await res.json();
-
-  console.log(data);
-
-  const schedule = data;
+  const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);    
 
   const getUpcomingAlarms = useCallback(() => {
     return Object.entries(schedule)
@@ -49,19 +38,6 @@ const App: React.FC = () => {
   }, [currentTime, schedule]);
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      const baseUrl =
-        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
-          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : "";
-      const apiUrl = `${baseUrl}/api/getSchedule`;
-      const res = await fetch(apiUrl);
-      const data = await res.json();
-      setSchedule(data);
-    };
-
-    fetchSchedule();
-
     const updateClock = () => {
       const time = getCurrentTime();
       setCurrentTime(time);
@@ -81,7 +57,7 @@ const App: React.FC = () => {
 
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
-  }, [getUpcomingAlarms]);
+  }, [getUpcomingAlarms, schedule, lastPlayedAlarm]);
 
   return (
     <Container maxWidth="sm">
@@ -107,7 +83,7 @@ const App: React.FC = () => {
         </Button>
         <audio
           ref={audioRef}
-          src="https://jpgmakypmimtlyqi.public.blob.vercel-storage.com/sound-zDkFiqPfFxbUIxKcwxQdEzBC4ZEKd1.mp3"
+          src={mp3Url}
         />
       </Paper>
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
@@ -116,19 +92,56 @@ const App: React.FC = () => {
         </Typography>
         <List>
           {Object.entries(schedule).map(([name, time]) => (
-            <>
-              <ListItem
-                key={time}
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <ListItemText primary={name} secondary={time} />
-              </ListItem>{" "}
-            </>
+            <ListItem
+              key={time}
+              sx={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <ListItemText primary={name} secondary={time} />
+            </ListItem>
           ))}
         </List>
       </Paper>
     </Container>
   );
 };
+
+export const getServerSideProps = async () => {
+  try {
+    const response = await list();
+    
+    // Find the download URL for the schedule.json file
+    const scheduleBlobUrl = response.blobs.find(blob => blob.pathname === "schedule.json")?.downloadUrl;
+
+    // Find the download URL for the .mp3 file
+    const mp3BlobUrl = response.blobs.find(blob => blob.pathname.endsWith(".mp3"))?.downloadUrl;
+
+    // If no schedule.json file is found, return empty schedule
+    if (!scheduleBlobUrl) {
+      return { props: { schedule: {}, mp3Url: null } };
+    }
+
+    // Fetch the schedule data
+    const scheduleResponse = await fetch(scheduleBlobUrl, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // If the schedule response is not OK, return empty schedule
+    if (!scheduleResponse.ok) {
+      return { props: { schedule: {}, mp3Url: mp3BlobUrl || null } };
+    }
+
+    // Parse the response JSON
+    const scheduleData = await scheduleResponse.json();
+    
+    // Return the schedule and mp3Url in the props
+    return { props: { schedule: scheduleData, mp3Url: mp3BlobUrl || null } };
+  } catch (error) {
+    console.error("Error fetching schedule or mp3 data:", error);
+    return { props: { schedule: {}, mp3Url: null } };
+  }
+};
+
+
+
 
 export default App;
