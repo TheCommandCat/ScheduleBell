@@ -50,9 +50,7 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
 
     console.log(schedule);
     setSchedule(schedule);
-    
-
-    // onScheduleChange(schedule); // Pass the schedule to the parent component
+    onScheduleChange(schedule); // Pass the schedule to the parent component
   };
 
   const removeLesson = (id: number) => {
@@ -67,8 +65,7 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
 
     console.log(schedule);
     setSchedule(schedule);
-
-    // onScheduleChange(schedule); // Pass the updated schedule to the parent component
+    onScheduleChange(schedule); // Pass the updated schedule to the parent component
   };
 
   return (
@@ -107,13 +104,6 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
           </ListItem>
         ))}
       </List>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => onScheduleChange(schedule)}
-      >
-        Save Schedule
-      </Button>
     </Paper>
   );
 };
