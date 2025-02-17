@@ -28,33 +28,34 @@ const AdminPage: React.FC = () => {
   };
 
   const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
+
+    console.log("called handleScheduleSubmit frontend");
+    
+
     try {
-      const response = await list();  
-      const blobUrl = response.blobs.find(blob => blob.pathname.endsWith("schedule.json"))?.downloadUrl;
-  
-      if (!blobUrl) {
-        console.error("No schedule.json file found.");
-        return;
-      }
-  
-      const updateResponse = await fetch(blobUrl, {
-        method: "PUT",
+      const response = await fetch('/api/updateSchedule', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add the authorization header with the admin password
+          'Authorization': 'Bearer 1234',  // Replace with your actual admin password
         },
-        body: JSON.stringify(schedule),
+        body: JSON.stringify(schedule),  // Send the updated schedule as JSON
       });
   
-      if (!updateResponse.ok) {
-        console.error("Failed to update the schedule file.");
-        return;
+      // Check if the response was successful
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Schedule updated successfully:', result.message);
+      } else {
+        const error = await response.json();
+        console.error('Failed to update schedule:', error.error);
       }
-  
-      console.log("Schedule successfully updated.");
     } catch (error) {
-      console.error("Error submitting schedule:", error);
+      console.error('Error submitting schedule:', error);
     }
   };
+  
   
     
 
