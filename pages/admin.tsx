@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import SchedulerEditor from "../components/SchedulerEditor";
 import SendIcon from "@mui/icons-material/Send";
-import { list } from '@vercel/blob';
+import { list } from "@vercel/blob";
 
 const AdminPage: React.FC = () => {
   const [logedin, setLogedin] = useState(false);
@@ -28,36 +28,31 @@ const AdminPage: React.FC = () => {
   };
 
   const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
-
     console.log("called handleScheduleSubmit frontend");
-    
 
     try {
-      const response = await fetch('/api/updateSchedule', {
-        method: 'POST',
+      const response = await fetch("/api/updateSchedule", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           // Add the authorization header with the admin password
-          'Authorization': 'Bearer 1234',  // Replace with your actual admin password
+          Authorization: "Bearer 1234", // Replace with your actual admin password
         },
-        body: JSON.stringify(schedule),  // Send the updated schedule as JSON
+        body: JSON.stringify(schedule), // Send the updated schedule as JSON
       });
-  
+
       // Check if the response was successful
       if (response.ok) {
         const result = await response.json();
-        console.log('Schedule updated successfully:', result.message);
+        console.log("Schedule updated successfully");
       } else {
         const error = await response.json();
-        console.error('Failed to update schedule:', error.error);
+        console.error("Failed to update schedule:", error.error);
       }
     } catch (error) {
-      console.error('Error submitting schedule:', error);
+      console.error("Error submitting schedule:", error);
     }
   };
-  
-  
-    
 
   const handleSoundFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -223,8 +218,5 @@ const AdminPage: React.FC = () => {
     </>
   );
 };
-
-
-
 
 export default AdminPage;
