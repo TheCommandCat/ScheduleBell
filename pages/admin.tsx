@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Container,
   Paper,
@@ -16,6 +16,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { list } from "@vercel/blob";
 
 const AdminPage: React.FC = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [logedin, setLogedin] = useState(false);
   const [password, setPassword] = useState("");
   const [scheduleFile, setScheduleFile] = useState<File | null>(null);
@@ -70,35 +71,41 @@ const AdminPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!logedin) {
-      setMessage("You must be logged in to upload files");
-      return;
+  if (!logedin) {
+    setMessage("You must be logged in to upload files");
+    return;
+  }
+
+  if (!soundFile) {
+    setMessage("Please select a sound file to upload");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/uploadSound", {
+      method: "POST",
+      headers: {
+        "Content-Disposition": `form-data; name="soundFile"; filename="${soundFile.name}"`,
+        "Content-Type": soundFile.type,
+        Authorization: "Bearer 1234", // Replace with your actual admin password
+      },
+      body: soundFile,
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      setMessage("Sound file uploaded successfully");
+      console.log("Sound file uploaded successfully:", result);
+    } else {
+      const error = await response.json();
+      setMessage("Failed to upload sound file");
+      console.error("Failed to upload sound file:", error.error);
     }
-
-    const formData = new FormData();
-    if (scheduleFile) formData.append("schedule", scheduleFile);
-    if (soundFile) formData.append("sound", soundFile);
-
-    try {
-      const baseUrl =
-        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
-          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : "";
-      const apiUrl = `${baseUrl}/api/upload`;
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        setMessage("Files uploaded successfully");
-      } else {
-        setMessage("Failed to upload files");
-      }
-    } catch (error) {
-      setMessage("Error uploading files");
-    }
-  };
+  } catch (error) {
+    setMessage("Error uploading sound file");
+    console.error("Error uploading sound file:", error);
+  }
+};
 
   const handleDialogOpen = () => {
     setIsDialogOpen(true);
@@ -139,9 +146,14 @@ const AdminPage: React.FC = () => {
                   Edit Schedule
                 </Button>
 
-                <Button variant="outlined" component="span">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   Upload Sound File
                   <input
+                    ref={fileInputRef}
                     id="sound-file-upload"
                     type="file"
                     onChange={handleSoundFileChange}

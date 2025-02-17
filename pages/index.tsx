@@ -9,8 +9,7 @@ import {
   ListItemText,
   Card,
 } from "@mui/material";
-import { list } from '@vercel/blob';
-
+import { list } from "@vercel/blob";
 
 interface Alarm {
   name: string;
@@ -24,11 +23,16 @@ const getCurrentTime = (): string => {
   });
 };
 
-const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({ schedule, mp3Url }) => {
+const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
+  schedule,
+  mp3Url,
+}) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
-  const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);    
+  const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
+
+  console.log("mp3Url", mp3Url);
 
   const getUpcomingAlarms = useCallback(() => {
     return Object.entries(schedule)
@@ -81,10 +85,7 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({ s
         <Button variant="contained" onClick={() => audioRef.current?.play()}>
           Test Alarm
         </Button>
-        <audio
-          ref={audioRef}
-          src={mp3Url}
-        />
+        <audio ref={audioRef} src={mp3Url} />
       </Paper>
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
         <Typography variant="h6" gutterBottom>
@@ -108,12 +109,16 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({ s
 export const getServerSideProps = async () => {
   try {
     const response = await list();
-    
+
     // Find the download URL for the schedule.json file
-    const scheduleBlobUrl = response.blobs.find(blob => blob.pathname === "schedule.json")?.downloadUrl;
+    const scheduleBlobUrl = response.blobs.find(
+      (blob) => blob.pathname === "schedule.json"
+    )?.downloadUrl;
 
     // Find the download URL for the .mp3 file
-    const mp3BlobUrl = response.blobs.find(blob => blob.pathname.endsWith(".mp3"))?.downloadUrl;
+    const mp3BlobUrl = response.blobs.find((blob) =>
+      blob.pathname.endsWith(".mp3")
+    )?.downloadUrl;
 
     // If no schedule.json file is found, return empty schedule
     if (!scheduleBlobUrl) {
@@ -122,7 +127,7 @@ export const getServerSideProps = async () => {
 
     // Fetch the schedule data
     const scheduleResponse = await fetch(scheduleBlobUrl, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
 
     // If the schedule response is not OK, return empty schedule
@@ -132,7 +137,7 @@ export const getServerSideProps = async () => {
 
     // Parse the response JSON
     const scheduleData = await scheduleResponse.json();
-    
+
     // Return the schedule and mp3Url in the props
     return { props: { schedule: scheduleData, mp3Url: mp3BlobUrl || null } };
   } catch (error) {
@@ -140,8 +145,5 @@ export const getServerSideProps = async () => {
     return { props: { schedule: {}, mp3Url: null } };
   }
 };
-
-
-
 
 export default App;
