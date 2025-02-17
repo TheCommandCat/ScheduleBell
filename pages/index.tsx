@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   Button,
   Typography,
@@ -9,7 +9,7 @@ import {
   ListItemText,
   Card,
 } from "@mui/material";
-import { list } from "@vercel/blob";
+import { fetchScheduleData } from "@/lib/utils/fetchServerData";
 
 interface Alarm {
   name: string;
@@ -29,39 +29,35 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
-  const [currentTime, setCurrentTime] = useState<string>(getCurrentTime());
-  const [lastPlayedAlarm, setLastPlayedAlarm] = useState<string | null>(null);
+  const lastPlayedAlarmRef = useRef<string | null>(null);
 
-  console.log("mp3Url", mp3Url);
-
-  const getUpcomingAlarms = useCallback(() => {
-    return Object.entries(schedule)
-      .map(([name, time]) => ({ name, time }))
-      .filter(({ time }) => time > currentTime)
-      .sort((a, b) => (a.time > b.time ? 1 : -1));
-  }, [currentTime, schedule]);
+  const scheduleEntries = useMemo(() => Object.entries(schedule), [schedule]);
 
   useEffect(() => {
     const updateClock = () => {
       const time = getCurrentTime();
-      setCurrentTime(time);
-      const upcomingAlarms = getUpcomingAlarms();
+
+      const upcomingAlarms = scheduleEntries
+        .map(([name, alarmTime]) => ({ name, time: alarmTime }))
+        .filter(({ time }) => time > time)
+        .sort((a, b) => (a.time > b.time ? 1 : -1));
+
       setNextAlarm(upcomingAlarms.length > 0 ? upcomingAlarms[0] : null);
 
       if (
         schedule &&
         Object.values(schedule).includes(time) &&
         audioRef.current &&
-        lastPlayedAlarm !== time
+        lastPlayedAlarmRef.current !== time
       ) {
         audioRef.current.play();
-        setLastPlayedAlarm(time);
+        lastPlayedAlarmRef.current = time;
       }
     };
 
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
-  }, [getUpcomingAlarms, schedule, lastPlayedAlarm]);
+  }, [schedule]);
 
   return (
     <Container maxWidth="sm">
@@ -92,7 +88,7 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
           Today's Schedule
         </Typography>
         <List>
-          {Object.entries(schedule).map(([name, time]) => (
+          {scheduleEntries.map(([name, time]) => (
             <ListItem
               key={time}
               sx={{ display: "flex", justifyContent: "space-between" }}
@@ -107,43 +103,8 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
 };
 
 export const getServerSideProps = async () => {
-  try {
-    const response = await list();
-
-    // Find the download URL for the schedule.json file
-    const scheduleBlobUrl = response.blobs.find(
-      (blob) => blob.pathname === "schedule.json"
-    )?.downloadUrl;
-
-    // Find the download URL for the .mp3 file
-    const mp3BlobUrl = response.blobs.find((blob) =>
-      blob.pathname.endsWith(".mp3")
-    )?.downloadUrl;
-
-    // If no schedule.json file is found, return empty schedule
-    if (!scheduleBlobUrl) {
-      return { props: { schedule: {}, mp3Url: null } };
-    }
-
-    // Fetch the schedule data
-    const scheduleResponse = await fetch(scheduleBlobUrl, {
-      headers: { "Content-Type": "application/json" },
-    });
-
-    // If the schedule response is not OK, return empty schedule
-    if (!scheduleResponse.ok) {
-      return { props: { schedule: {}, mp3Url: mp3BlobUrl || null } };
-    }
-
-    // Parse the response JSON
-    const scheduleData = await scheduleResponse.json();
-
-    // Return the schedule and mp3Url in the props
-    return { props: { schedule: scheduleData, mp3Url: mp3BlobUrl || null } };
-  } catch (error) {
-    console.error("Error fetching schedule or mp3 data:", error);
-    return { props: { schedule: {}, mp3Url: null } };
-  }
+  const { schedule, mp3Url } = await fetchScheduleData();
+  return { props: { schedule, mp3Url } };
 };
 
 export default App;
