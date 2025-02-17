@@ -6,8 +6,11 @@ import {
   TextField,
   Button,
   Box,
+  Link,
+  IconButton,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
+import HomeIcon from "@mui/icons-material/Home";
 import SchedulerEditor from "../components/SchedulerEditor";
 
 const AdminPage: React.FC = () => {
@@ -113,10 +116,24 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <>
-      {logedin ? (
-        <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-          <Paper elevation={3} sx={{ padding: 4 }}>
+    <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+      <Paper elevation={3} sx={{ padding: 4, position: "relative" }}>
+        <Link href="/">
+          <IconButton
+            color="default"
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              mt: 2,
+              mr: 2,
+            }}
+          >
+            <HomeIcon />
+          </IconButton>
+        </Link>
+        {logedin ? (
+          <>
             <Typography
               variant="h4"
               sx={{
@@ -187,11 +204,9 @@ const AdminPage: React.FC = () => {
                 {message}
               </Typography>
             </Box>
-          </Paper>
-        </Container>
-      ) : (
-        <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-          <Paper elevation={3} sx={{ padding: 4 }}>
+          </>
+        ) : (
+          <>
             <Typography variant="h4" gutterBottom>
               מערכת מנהל
             </Typography>
@@ -214,10 +229,10 @@ const AdminPage: React.FC = () => {
             <Typography variant="body1" color="textSecondary">
               {message}
             </Typography>
-          </Paper>
-        </Container>
-      )}
-    </>
+          </>
+        )}
+      </Paper>
+    </Container>
   );
 };
 

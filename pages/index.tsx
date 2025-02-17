@@ -8,7 +8,10 @@ import {
   ListItem,
   ListItemText,
   Card,
+  Link,
+  IconButton,
 } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { fetchScheduleData } from "@/lib/utils/fetchServerData";
 
 interface Alarm {
@@ -61,7 +64,22 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={4} sx={{ p: 4, mt: 4, textAlign: "center" }}>
+      <Paper
+        elevation={4}
+        sx={{ p: 4, mt: 4, textAlign: "center", position: "relative" }}
+      >
+        <Link href="/admin">
+          <IconButton
+            color="default"
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+            }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Link>
         <Typography variant="h4" gutterBottom>
           Hofim Alarm System
         </Typography>
