@@ -1,19 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Container,
   Paper,
   Typography,
   TextField,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Box,
+  DialogTitle,
 } from "@mui/material";
 import SchedulerEditor from "../components/SchedulerEditor";
 import SendIcon from "@mui/icons-material/Send";
-import { list } from "@vercel/blob";
 
 const AdminPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +18,10 @@ const AdminPage: React.FC = () => {
   const [scheduleFile, setScheduleFile] = useState<File | null>(null);
   const [soundFile, setSoundFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
+  const [initialSchedule, setInitialSchedule] = useState<{
+    [key: string]: string;
+  }>({});
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -36,13 +35,11 @@ const AdminPage: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add the authorization header with the admin password
-          Authorization: "Bearer 1234", // Replace with your actual admin password
+          Authorization: "Bearer 1234",
         },
-        body: JSON.stringify(schedule), // Send the updated schedule as JSON
+        body: JSON.stringify(schedule),
       });
 
-      // Check if the response was successful
       if (response.ok) {
         const result = await response.json();
         console.log("Schedule updated successfully");
@@ -52,6 +49,34 @@ const AdminPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error submitting schedule:", error);
+    }
+  };
+
+  const fetchInitialSchedule = async () => {
+    try {
+      const response = await fetch("/api/getSchedule");
+      if (response.ok) {
+        const data = await response.json();
+        setInitialSchedule(data);
+        setSchedule(data); // Initialize current schedule with initial data
+      } else {
+        console.error("Failed to fetch initial schedule");
+      }
+    } catch (error) {
+      console.error("Error fetching initial schedule:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (logedin) {
+      fetchInitialSchedule();
+    }
+  }, [logedin]);
+
+  const handleRemoveSoundFile = () => {
+    setSoundFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -71,48 +96,44 @@ const AdminPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-  if (!logedin) {
-    setMessage("You must be logged in to upload files");
-    return;
-  }
-
-  if (!soundFile) {
-    setMessage("Please select a sound file to upload");
-    return;
-  }
-
-  try {
-    const response = await fetch("/api/uploadSound", {
-      method: "POST",
-      headers: {
-        "Content-Disposition": `form-data; name="soundFile"; filename="${soundFile.name}"`,
-        "Content-Type": soundFile.type,
-        Authorization: "Bearer 1234", // Replace with your actual admin password
-      },
-      body: soundFile,
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      setMessage("Sound file uploaded successfully");
-      console.log("Sound file uploaded successfully:", result);
-    } else {
-      const error = await response.json();
-      setMessage("Failed to upload sound file");
-      console.error("Failed to upload sound file:", error.error);
+    if (!logedin) {
+      setMessage("You must be logged in to upload files");
+      return;
     }
-  } catch (error) {
-    setMessage("Error uploading sound file");
-    console.error("Error uploading sound file:", error);
-  }
-};
 
-  const handleDialogOpen = () => {
-    setIsDialogOpen(true);
-  };
+    if (Object.keys(schedule).length > 0) {
+      handleScheduleSubmit(schedule);
+    }
 
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
+    if (!soundFile) {
+      setMessage("Please select a sound file to upload or update the schedule");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/uploadSound", {
+        method: "POST",
+        headers: {
+          "Content-Disposition": `form-data; name="soundFile"; filename="${soundFile.name}"`,
+          "Content-Type": soundFile.type,
+          Authorization: "Bearer 1234",
+        },
+        body: soundFile,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setMessage("Files updated successfully");
+        console.log("Sound file uploaded successfully:", result);
+      } else {
+        const error = await response.json();
+        setMessage("Failed to upload sound file");
+        console.error("Failed to upload sound file:", error.error);
+      }
+    } catch (error) {
+      setMessage("Error uploading sound file");
+      console.error("Error uploading sound file:", error);
+    }
   };
 
   return (
@@ -132,19 +153,20 @@ const AdminPage: React.FC = () => {
               מערכת מנהל
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column" }}>
+              {/* Column layout for Schedule Editor and Upload */}
               <Box
                 sx={{
                   display: "flex",
-                  flexDirection: "row",
+                  flexDirection: "column",
                   gap: 2,
                   alignItems: "center",
-                  justifyContent: "space-evenly",
                   marginBottom: 2,
                 }}
               >
-                <Button variant="outlined" onClick={handleDialogOpen}>
-                  Edit Schedule
-                </Button>
+                <DialogTitle>Edit Schedule</DialogTitle>
+                <SchedulerEditor
+                  onScheduleChange={(newSchedule) => setSchedule(newSchedule)}
+                />
 
                 <Button
                   variant="outlined"
@@ -160,7 +182,18 @@ const AdminPage: React.FC = () => {
                     style={{ display: "none" }}
                   />
                 </Button>
-                {soundFile && <Typography>{soundFile.name}</Typography>}
+                {soundFile && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography>{soundFile.name}</Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleRemoveSoundFile}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                )}
               </Box>
               <Button
                 variant="contained"
@@ -181,23 +214,6 @@ const AdminPage: React.FC = () => {
               </Typography>
             </Box>
           </Paper>
-          <Dialog open={isDialogOpen} onClose={handleDialogClose}>
-            <DialogTitle>Edit Schedule</DialogTitle>
-            <DialogContent>
-              <SchedulerEditor
-                onScheduleChange={(schedule) => handleScheduleSubmit(schedule)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={handleDialogClose}
-                color="primary"
-                variant="contained"
-              >
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Container>
       ) : (
         <Container maxWidth="sm" sx={{ marginTop: 4 }}>
