@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import SchedulerEditor from "../components/SchedulerEditor";
 import SendIcon from "@mui/icons-material/Send";
+import { list } from '@vercel/blob';
 
 const AdminPage: React.FC = () => {
   const [logedin, setLogedin] = useState(false);
@@ -28,30 +29,34 @@ const AdminPage: React.FC = () => {
 
   const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
     try {
-      const baseUrl =
-        typeof window === "undefined" && process.env.NEXT_PUBLIC_VERCEL_URL
-          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : "";
-      const apiUrl = `${baseUrl}/api/updateSchedule`;
-      const response = await fetch(apiUrl, {
-        method: "POST",
+      const response = await list();  
+      const blobUrl = response.blobs.find(blob => blob.pathname.endsWith("schedule.json"))?.downloadUrl;
+  
+      if (!blobUrl) {
+        console.error("No schedule.json file found.");
+        return;
+      }
+  
+      const updateResponse = await fetch(blobUrl, {
+        method: "PUT",
         headers: {
-          Authorization: `Bearer ${password}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(schedule),
       });
-
-      if (response.ok) {
-        console.log(JSON.stringify(schedule));
-
-        setMessage("Files uploaded successfully");
-      } else {
-        setMessage("Failed to upload files");
+  
+      if (!updateResponse.ok) {
+        console.error("Failed to update the schedule file.");
+        return;
       }
+  
+      console.log("Schedule successfully updated.");
     } catch (error) {
-      setMessage("Error uploading files");
+      console.error("Error submitting schedule:", error);
     }
   };
+  
+    
 
   const handleSoundFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
