@@ -42,8 +42,8 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
 
       const upcomingAlarms = scheduleEntries
         .map(([name, alarmTime]) => ({ name, time: alarmTime }))
-        .filter(({ time }) => time > time)
-        .sort((a, b) => (a.time > b.time ? 1 : -1));
+        .filter(({ time: alarmTime }) => alarmTime > time)
+        .sort((a, b) => Number(a.time) - Number(b.time));
 
       setNextAlarm(upcomingAlarms.length > 0 ? upcomingAlarms[0] : null);
 
