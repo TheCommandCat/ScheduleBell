@@ -63,7 +63,7 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
   }, [schedule]);
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="sm" dir="rtl">
       <Paper
         elevation={4}
         sx={{ p: 4, mt: 4, textAlign: "center", position: "relative" }}
@@ -81,11 +81,11 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
           </IconButton>
         </Link>
         <Typography variant="h4" gutterBottom>
-          Hofim Alarm System
+          מערכת צלצולים חופים
         </Typography>
         <Card elevation={2} sx={{ mb: 3, p: 2 }}>
           <Typography variant="body1" color="textSecondary">
-            Next Alarm:
+            הצלצול הבא:
           </Typography>
           <Typography
             variant="h5"
@@ -93,17 +93,17 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
           >
             {nextAlarm
               ? `${nextAlarm.name} - ${nextAlarm.time}`
-              : "No upcoming alarms"}
+              : "אין צלצולים מתוזמנים"}
           </Typography>
         </Card>
         <Button variant="contained" onClick={() => audioRef.current?.play()}>
-          Test Alarm
+          בדיקת צלצול
         </Button>
         <audio ref={audioRef} src={mp3Url} />
       </Paper>
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
         <Typography variant="h6" gutterBottom>
-          Today's Schedule
+          לוח הזמנים
         </Typography>
         <List>
           {scheduleEntries.map(([name, time]) => (
