@@ -30,6 +30,19 @@ Currently this project is mainly used in institutions in Israel therefore **the 
 
 ## 📦 Installation & Deployment
 
+Currently supporting only **Vercel Storage**, create a project on Vercel and obtain a `BLOB_READ_WRITE_TOKEN`.
+
+- Add the token to a `.env.local` file on the root of the project:
+  ```bash
+  BLOB_READ_WRITE_TOKEN=your_token_here
+  ```
+
+### Auto
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/TheCommandCat/ScheduleBell)
+
+### Manual
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/TheCommandCat/ScheduleBell.git
@@ -39,17 +52,11 @@ Currently this project is mainly used in institutions in Israel therefore **the 
    ```bash
    npm i
    ```
-3. **Set up environment variables:**
-   - Currently supporting only **Vercel Storage**, create a project on Vercel and obtain a `BLOB_READ_WRITE_TOKEN`.
-   - Add the token to a `.env.local` file on the root of the project:
-     ```bash
-     BLOB_READ_WRITE_TOKEN=your_token_here
-     ```
-4. **Run locally:**
+3. **Run locally:**
    ```bash
    npm run dev
    ```
-5. **Deploy:**
+4. **Deploy:**
    - Currently you can deploy this on **Vercel** by pushing to GitHub and linking your repository to [Vercel](https://vercel.com).
 
 ## 🎯 Future Improvements
