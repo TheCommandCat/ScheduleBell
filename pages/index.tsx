@@ -81,7 +81,7 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
           </IconButton>
         </Link>
         <Typography variant="h4" gutterBottom>
-          מערכת צלצולים חופים
+          מערכת צלצולים
         </Typography>
         <Card elevation={2} sx={{ mb: 3, p: 2 }}>
           <Typography variant="body1" color="textSecondary">
