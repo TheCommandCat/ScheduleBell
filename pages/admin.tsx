@@ -25,12 +25,27 @@ const AdminPage: React.FC = () => {
     setPassword(e.target.value);
   };
 
-  const handleLogin = () => {
-    if (password === "1234") {
-      setLogedin(true);
-      setMessage("");
-    } else {
-      setMessage("Incorrect password");
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLogedin(true);
+        setMessage("");
+      } else {
+        const data = await response.json();
+        setMessage(data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setMessage("Login Error");
     }
   };
 

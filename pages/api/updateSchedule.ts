@@ -1,30 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { put, del, list } from "@vercel/blob";
-import { access } from "fs";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const adminPassword = "1234"; // Replace with your actual admin password
+  const adminPassword = process.env.ADMIN_PASSWORD;
   const listBlobs = await list();
 
   console.log("called handleScheduleSubmit frontend");
 
-  // Ensure the request method is POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Check for authentication header
   const authHeader = req.headers.authorization;
-
   if (!authHeader || authHeader !== `Bearer ${adminPassword}`) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
-    // Find the download URL for the schedule.json file
     const scheduleBlobUrl = listBlobs.blobs.find((blob) =>
       blob.pathname.endsWith(".json")
     );
@@ -43,7 +38,6 @@ export default async function handler(
 
     return res.json(blob);
   } catch (error) {
-    // Handle errors during the process
     console.error("Error updating schedule:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
