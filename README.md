@@ -33,8 +33,15 @@ Currently this project is mainly used in institutions in Israel therefore **the 
 Currently supporting only **Vercel Storage**, create a project on Vercel and obtain a `BLOB_READ_WRITE_TOKEN`.
 
 - Add the token to a `.env.local` file on the root of the project:
+
   ```bash
-  BLOB_READ_WRITE_TOKEN=your_token_here
+  BLOB_READ_WRITE_TOKEN="your_token_here"
+  ```
+
+  in addition to be able to login into the admin panel set a admin password:
+
+  ```bash
+  ADMIN_PASSWORD="enter-password-here"
   ```
 
 ### Auto
