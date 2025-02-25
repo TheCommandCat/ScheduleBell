@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { fetchScheduleData } from "@/lib/utils/fetchServerData";
+import { Schedule } from "@/types";
 
 interface Alarm {
   name: string;
@@ -26,7 +27,7 @@ const getCurrentTime = (): string => {
   });
 };
 
-const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
+const App: React.FC<{ schedule: Schedule; mp3Url: string }> = ({
   schedule,
   mp3Url,
 }) => {
@@ -34,22 +35,21 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
   const [nextAlarm, setNextAlarm] = useState<Alarm | null>(null);
   const lastPlayedAlarmRef = useRef<string | null>(null);
 
-  const scheduleEntries = useMemo(() => Object.entries(schedule), [schedule]);
+  const scheduleEntries = useMemo(() => schedule, [schedule]);
 
   useEffect(() => {
     const updateClock = () => {
       const time = getCurrentTime();
 
       const upcomingAlarms = scheduleEntries
-        .map(([name, alarmTime]) => ({ name, time: alarmTime }))
-        .filter(({ time: alarmTime }) => alarmTime > time)
+        .filter((entry) => entry.time > time)
         .sort((a, b) => Number(a.time) - Number(b.time));
 
       setNextAlarm(upcomingAlarms.length > 0 ? upcomingAlarms[0] : null);
 
       if (
         schedule &&
-        Object.values(schedule).includes(time) &&
+        Object.values(schedule).map(String).includes(time) &&
         audioRef.current &&
         lastPlayedAlarmRef.current !== time
       ) {
@@ -106,12 +106,12 @@ const App: React.FC<{ schedule: Record<string, string>; mp3Url: string }> = ({
           לוח הזמנים
         </Typography>
         <List>
-          {scheduleEntries.map(([name, time]) => (
+          {scheduleEntries.map((entry) => (
             <ListItem
-              key={time}
+              key={entry.id}
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
-              <ListItemText primary={name} secondary={time} />
+              <ListItemText primary={entry.name} secondary={entry.time} />
             </ListItem>
           ))}
         </List>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   TextField,
   Button,
@@ -6,7 +6,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -15,14 +14,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs from "dayjs";
 
-interface Lesson {
-  id: number;
-  name: string;
-  time: string;
-}
+import { Lesson, Schedule } from "../types";
 
 interface SchedulerEditorProps {
-  onScheduleChange: (schedule: { [key: string]: string }) => void;
+  onScheduleChange: (schedule: Schedule) => void;
 }
 
 const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
@@ -31,42 +26,30 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [lessonName, setLessonName] = useState("");
   const [lessonTime, setLessonTime] = useState("");
-  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
 
-  const addLesson = () => {
+  const addLesson = useCallback(() => {
     const newLesson: Lesson = {
       id: lessons.length ? lessons[lessons.length - 1].id + 1 : 1,
       name: lessonName,
       time: lessonTime,
     };
-    const updatedLessons = [...lessons, newLesson];
-    setLessons(updatedLessons);
+    setLessons([...lessons, newLesson]);
+    setLessonName("");
+    setLessonTime("");
+  }, [lessons, lessonName, lessonTime]);
 
-    // Converting lessons array to schedule object
-    const schedule: { [key: string]: string } = {};
-    updatedLessons.forEach((lesson) => {
-      schedule[lesson.name] = lesson.time;
-    });
+  const removeLesson = useCallback(
+    (id: number) => {
+      setLessons(lessons.filter((lesson) => lesson.id !== id));
+    },
+    [lessons]
+  );
 
-    console.log(schedule);
-    setSchedule(schedule);
-    onScheduleChange(schedule); // Pass the schedule to the parent component
-  };
+  const handleScheduleChange = useCallback(() => {
+    onScheduleChange(lessons);
+  }, [lessons, onScheduleChange]);
 
-  const removeLesson = (id: number) => {
-    const updatedLessons = lessons.filter((lesson) => lesson.id !== id);
-    setLessons(updatedLessons);
-
-    // Converting lessons array to schedule object
-    const schedule: { [key: string]: string } = {};
-    updatedLessons.forEach((lesson) => {
-      schedule[lesson.name] = lesson.time;
-    });
-
-    console.log(schedule);
-    setSchedule(schedule);
-    onScheduleChange(schedule); // Pass the updated schedule to the parent component
-  };
+  React.useEffect(handleScheduleChange, [lessons]);
 
   return (
     <Paper style={{ padding: 16 }}>
@@ -80,7 +63,8 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
           <TimePicker
             label="שעת שיעור"
             format="HH:mm"
-            onChange={(time) => time && setLessonTime(time.format("HH:mm"))}
+            value={lessonTime ? dayjs(lessonTime, "HH:mm") : null}
+            onChange={(time) => setLessonTime(time ? time.format("HH:mm") : "")}
           />
         </LocalizationProvider>
         <Button variant="contained" color="primary" onClick={addLesson}>

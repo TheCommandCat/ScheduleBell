@@ -12,6 +12,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import HomeIcon from "@mui/icons-material/Home";
 import SchedulerEditor from "../components/SchedulerEditor";
+import { Schedule } from "@/types";
 
 const AdminPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,7 +20,7 @@ const AdminPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [soundFile, setSoundFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
-  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
+  const [schedule, setSchedule] = useState<Schedule>([]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -64,7 +65,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const handleScheduleSubmit = async (schedule: { [key: string]: string }) => {
+  const handleScheduleSubmit = async (schedule: Schedule) => {
     try {
       const response = await fetch("/api/updateSchedule", {
         method: "POST",

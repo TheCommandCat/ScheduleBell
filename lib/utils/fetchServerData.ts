@@ -1,3 +1,4 @@
+import { Lesson } from "@/types";
 import { list } from "@vercel/blob";
 
 export const fetchScheduleData = async () => {
@@ -10,7 +11,8 @@ export const fetchScheduleData = async () => {
       blob.pathname.endsWith(".mp3")
     )?.downloadUrl;
 
-    if (!scheduleBlobUrl) return { schedule: {}, mp3Url: mp3BlobUrl || null };
+    if (!scheduleBlobUrl)
+      return { schedule: {} as Lesson, mp3Url: mp3BlobUrl || null };
 
     const scheduleResponse = await fetch(scheduleBlobUrl, {
       headers: { "Content-Type": "application/json" },
@@ -23,6 +25,6 @@ export const fetchScheduleData = async () => {
     return { schedule: scheduleData, mp3Url: mp3BlobUrl || null };
   } catch (error) {
     console.error("Error fetching schedule or mp3 data:", error);
-    return { schedule: {}, mp3Url: null };
+    return { schedule: {} as Lesson, mp3Url: null };
   }
 };
