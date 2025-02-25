@@ -30,6 +30,10 @@ const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
   const [lessonTime, setLessonTime] = useState("");
 
   const addLesson = useCallback(() => {
+    if (!lessonName || !lessonTime || lessonTime === "Invalid Date") {
+      return;
+    }
+
     const newLesson: Lesson = {
       id: lessons.length ? lessons[lessons.length - 1].id + 1 : 1,
       name: lessonName,
