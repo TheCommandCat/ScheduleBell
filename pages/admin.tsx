@@ -21,6 +21,25 @@ const AdminPage: React.FC = () => {
   const [soundFile, setSoundFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [schedule, setSchedule] = useState<Schedule>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const response = await fetch("/api/getSchedule");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setSchedule(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+        setLoading(false);
+      }
+    };
+    fetchSchedule();
+  }, []);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -49,8 +68,6 @@ const AdminPage: React.FC = () => {
       setMessage("Login Error");
     }
   };
-
-  // fetch the initial schedule
 
   const handleSoundFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -173,6 +190,7 @@ const AdminPage: React.FC = () => {
               >
                 <SchedulerEditor
                   onScheduleChange={(newSchedule) => setSchedule(newSchedule)}
+                  initialSchedule={schedule}
                 />
 
                 <Button

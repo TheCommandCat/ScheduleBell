@@ -18,12 +18,14 @@ import { Lesson, Schedule } from "../types";
 
 interface SchedulerEditorProps {
   onScheduleChange: (schedule: Schedule) => void;
+  initialSchedule?: Schedule;
 }
 
 const SchedulerEditor: React.FC<SchedulerEditorProps> = ({
   onScheduleChange,
+  initialSchedule = [],
 }) => {
-  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>(initialSchedule);
   const [lessonName, setLessonName] = useState("");
   const [lessonTime, setLessonTime] = useState("");
 

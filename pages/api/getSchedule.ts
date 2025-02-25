@@ -1,25 +1,43 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { list } from "@vercel/blob";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const blobUrl =
-    "https://jpgmakypmimtlyqi.public.blob.vercel-storage.com/schedule-MHJZQSKB6jWGnOmK5KxIKAlWKU9xCo.json";
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) {
+    return res.status(500).json({ error: "BLOB_READ_WRITE_TOKEN not found" });
+  }
 
   try {
-    const response = await fetch(blobUrl);
-    if (!response.ok) {
-      throw new Error("Failed to fetch schedule file");
+    const response = await list({ token });
+    const scheduleBlobUrl = response.blobs.find(
+      (blob) => blob.pathname === "schedule.json"
+    )?.downloadUrl;
+
+    if (!scheduleBlobUrl) {
+      return res.status(404).json({ error: "schedule.json not found" });
     }
-    const data = await response.json();
-    res.json(data);
+
+    const scheduleResponse = await fetch(scheduleBlobUrl, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!scheduleResponse.ok) {
+      return res.status(500).json({
+        error: `Error fetching schedule: ${scheduleResponse.status}`,
+      });
+    }
+
+    const scheduleData = await scheduleResponse.json();
+    return res.status(200).json(scheduleData);
   } catch (error) {
-    res.status(500).json({ error: (error as any).message });
+    console.error("Error fetching schedule:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
